@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python'
 import { javascript }  from '@codemirror/lang-javascript';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
+import { onMessage } from './socket';
 
 function Editor(){
     const [code, setCode ] = useState("// start typing")
@@ -23,6 +24,8 @@ function Editor(){
                 return javascript({ jsx: true });
         }
     }
+
+    useEffect(() => onMessage((e) => setCode(e.data)), [])
 
     return (
         <div className="flex flex-col w-full max-w-4xl h-[80vh] mx-auto border border-gray-700 rounded-lg overflow-hidden">
