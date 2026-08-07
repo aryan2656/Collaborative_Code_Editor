@@ -1,21 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python'
 import { javascript }  from '@codemirror/lang-javascript';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import { onMessage } from './socket';
 
-function Editor(){
-    const [code, setCode ] = useState("// start typing")
-    const [language, SetLanguage] = useState("javascript")
-
-    console.log("Current language: ", language)
-
-    const onChange = useCallback((val: string, viewUpdate: any) => {
-        setCode(val);
-    }, []);
-
-    const getLanguageExtension = (lang: string) => {
+ const getLanguageExtension = (lang: string) => {
         switch (lang) {
             case 'python':
                 return python();
@@ -24,6 +14,29 @@ function Editor(){
                 return javascript({ jsx: true });
         }
     }
+
+ // Generating a random client ID once per browser tab session
+    function generateClientId(){
+        return Math.random().toString(36).substring(2, 10);
+    }
+
+function Editor(){
+    const [code, setCode ] = useState("// start typing")
+    const [language, SetLanguage] = useState("javascript")
+
+    generateClientId();
+
+    // Stable client ID for this tab, generated once
+    const clientId = useRef(generateClientId()).current;
+
+    // WebSocket connection, kept in a red so it survives re-renders
+    const ws = useRef<WebSocket | null>(null);
+
+    
+
+    const onChange = useCallback((val: string, viewUpdate: any) => {
+        setCode(val);
+    }, []);
 
     useEffect(() => onMessage((e) => setCode(e.data)), [])
 
